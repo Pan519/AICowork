@@ -152,6 +152,12 @@
 git clone https://github.com/Pan519/AICowork.git
 cd AICowork
 
+#安装pnpm
+npm install -g pnpm
+
+#安装bun
+npm install -g bun
+
 # 安装依赖
 pnpm install
 
@@ -170,6 +176,24 @@ pnpm dist:mac-arm64 # macOS ARM
 pnpm dist:mac-x64  # macOS Intel
 pnpm dist:linux    # Linux
 ```
+
+
+
+#### Electron安装修复
+
+如果在运行时候出现报错`Electron failed to install correctly, please delete node_modules/electron and try installing again`请使用下面方案解决
+
+_这不是你的问题，这是`pnpm`的问题~_
+
+```bash
+#安装electron-fix（解决Electron failed to install correctly）
+npm install -g electron-fix
+
+#安装electron
+electron-fix start
+```
+
+
 
 ---
 
