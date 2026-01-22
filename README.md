@@ -460,7 +460,6 @@ pnpm lint
 ## 联系方式
 
 - **作者**: Alan
-- **邮箱**: alan@example.com
 - **项目地址**: [https://github.com/Pan519/AICowork](https://github.com/Pan519/AICowork)
 - **问题反馈**: [Issues](https://github.com/Pan519/AICowork/issues)
 
