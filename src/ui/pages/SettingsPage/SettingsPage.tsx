@@ -11,7 +11,7 @@ export function SettingsPage() {
   const { setCurrentPage, settingsSection, setSettingsSection } = useAppStore();
 
   return (
-    <div className="flex h-screen bg-surface">
+    <div className="h-screen bg-surface">
       {/* 顶部标题栏 */}
       <header className="fixed top-0 left-0 right-0 z-10 h-12 bg-surface border-b border-ink-900/10 flex items-center px-4">
         <button
@@ -25,7 +25,7 @@ export function SettingsPage() {
       </header>
 
       {/* 主内容区 */}
-      <div className="flex pt-12">
+      <div className="pt-12">
         {/* 左侧导航 */}
         <SettingsNavigation
           activeSection={settingsSection}
