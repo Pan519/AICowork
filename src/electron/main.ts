@@ -110,6 +110,7 @@ app.on("ready", () => {
         minHeight: 600,
         webPreferences: {
             preload: getPreloadPath(),
+            devTools: true,
         },
         icon: getIconPath(),
         titleBarStyle: "hiddenInset",
@@ -120,6 +121,9 @@ app.on("ready", () => {
     if (isDev()) mainWindow.loadURL(`http://localhost:${DEV_PORT}`)
     else mainWindow.loadFile(getUIPath());
 
+    if (isDev() || process.env.OPEN_DEVTOOLS === '1') {
+        mainWindow.webContents.openDevTools({ mode: 'bottom' });
+    }
     // 设置 CSP 安全头
     mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
         // 开发环境：允许本地开发服务器和内联脚本
@@ -147,6 +151,13 @@ app.on("ready", () => {
     });
     globalShortcut.register('CommandOrControl+Shift+I', () => {
         mainWindow?.webContents.openDevTools();
+    });
+
+    mainWindow.webContents.on('context-menu', (_event, params) => {
+        mainWindow?.webContents.inspectElement(params.x, params.y);
+        if (!mainWindow?.webContents.isDevToolsOpened()) {
+            mainWindow?.webContents.openDevTools({ mode: 'bottom' });
+        }
     });
 
     pollResources(mainWindow);
