@@ -97,13 +97,17 @@ export function usePromptActions(sendEvent: (event: ClientEvent) => void) {
 }
 
 /**
- * PromptInput 组件
- * 基本输入框组件，支持自动调整高度和快捷键操作
- */
+   * PromptInput 组件
+   * 基本输入框组件，支持自动调整高度和快捷键操作
+   */
 export function PromptInput({ sendEvent, onSendMessage, disabled = false }: PromptInputProps) {
   const { t } = useTranslation();
   const { prompt, setPrompt, isRunning, handleSend, handleStop } = usePromptActions(sendEvent);
+  console.log("🚀 ~ PromptInput ~ isRunning:", isRunning)
   const promptRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // 直接检查是否有活跃会话，更可靠的方式
+  const hasActiveSession = useAppStore((state) => !!state.activeSessionId);
 
   /**
    * 处理键盘事件
@@ -166,33 +170,45 @@ export function PromptInput({ sendEvent, onSendMessage, disabled = false }: Prom
     }
   }, [prompt]);
 
+  // 处理输入框点击事件 - 当没有活跃会话时，打开启动会话模态框
+  const handleEmptySessionClick = () => {
+    console.log("🚀 ~ handleEmptySessionClick ~ hasActiveSession:", hasActiveSession)
+    if (!hasActiveSession) {
+      useAppStore.getState().setShowStartModal(true);
+    }
+  };
+
   return (
     <section className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-surface via-surface to-transparent pb-6 px-2 lg:pb-8 pt-8 lg:ml-[280px]">
       <div className="mx-auto relative w-full max-w-full lg:max-w-3xl">
-        <div className="flex items-end gap-3 rounded-2xl border border-ink-900/10 bg-surface px-4 py-3 shadow-card">
+        <div 
+          className="flex items-end gap-3 rounded-2xl border border-ink-900/10 bg-surface px-4 py-3 shadow-card"
+          onClick={handleEmptySessionClick}
+        >
           {/* 文本输入框 */}
           <textarea
             rows={1}
-            className="flex-1 resize-none bg-transparent py-1.5 text-sm text-ink-800 placeholder:text-muted focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex-1 resize-none bg-transparent py-1.5 text-sm text-ink-800 placeholder:text-muted focus:outline-none disabled:opacity-60 cursor-pointer"
             placeholder={disabled ? t("promptInput.placeholderDisabled") : t("promptInput.placeholder")}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             onInput={handleInput}
             ref={promptRef}
-            disabled={disabled && !isRunning}
           />
 
           {/* 发送/停止按钮 */}
           <button
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-60 cursor-pointer ${
               isRunning
                 ? "bg-error text-white hover:bg-error/90"
                 : "bg-accent text-white hover:bg-accent-hover"
             }`}
-            onClick={handleButtonClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick();
+            }}
             aria-label={isRunning ? t("promptInput.stopSession") : t("promptInput.sendPrompt")}
-            disabled={disabled && !isRunning}
           >
             {isRunning ? (
               <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
