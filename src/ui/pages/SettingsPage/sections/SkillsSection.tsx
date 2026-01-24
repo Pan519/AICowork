@@ -252,7 +252,7 @@ if __name__ == '__main__':
         <div className="flex">
           {/* 左侧：表单编辑区 - 占50% */}
           <div className="w-1/2 pr-6 space-y-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
-            <div className="space-y-2">
+            <div className="grid gap-1.5">
               <label className="text-xs font-medium text-muted">技能名称</label>
               <input
                 type="text"
@@ -264,7 +264,7 @@ if __name__ == '__main__':
               <p className="text-xs text-muted-light">只能包含字母、数字、连字符和下划线</p>
             </div>
 
-            <div className="space-y-2">
+            <div className="grid gap-1.5">
               <label className="text-xs font-medium text-muted">技能描述</label>
               <input
                 type="text"
@@ -275,10 +275,10 @@ if __name__ == '__main__':
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="grid gap-1.5">
               <label className="text-xs font-medium text-muted">技能指导</label>
               <textarea
-                className="rounded-xl border border-ink-900/10 bg-surface-secondary px-4 py-2.5 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors min-h-[120px] resize-y"
+                className="w-full rounded-xl border border-ink-900/10 bg-surface-secondary px-4 py-2.5 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors min-h-[120px] resize-y whitespace-pre-wrap"
                 placeholder="描述 AI 如何执行这个技能..."
                 value={skillPrompt}
                 onChange={(e) => setSkillPrompt(e.target.value)}
@@ -287,7 +287,7 @@ if __name__ == '__main__':
 
             {/* 程序脚本配置 */}
             <div className="p-4 rounded-xl border border-ink-900/10 bg-surface-secondary space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="grid gap-1.5">
                 <label className="text-xs font-medium text-muted">程序脚本（可选）</label>
                 <select
                   className="text-xs rounded-lg border border-ink-900/10 bg-surface px-3 py-1.5 text-ink-800 focus:border-accent focus:outline-none"
@@ -311,7 +311,7 @@ if __name__ == '__main__':
                   <div className="grid gap-1.5">
                     <label className="text-xs font-medium text-muted">脚本内容</label>
                     <textarea
-                      className="rounded-xl border border-ink-900/10 bg-surface px-3 py-2 text-xs font-mono text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors min-h-[150px] resize-y font-mono"
+                      className="w-full rounded-xl border border-ink-900/10 bg-surface px-3 py-2 text-xs font-mono text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors min-h-[150px] resize-y font-mono"
                       placeholder={`// ${scriptType} 脚本内容...`}
                       value={scriptContent}
                       onChange={(e) => setScriptContent(e.target.value)}
@@ -322,7 +322,7 @@ if __name__ == '__main__':
                     <label className="text-xs font-medium text-muted">脚本路径（可选）</label>
                     <input
                       type="text"
-                      className="rounded-xl border border-ink-900/10 bg-surface px-3 py-2 text-xs text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
+                      className="w-full rounded-xl border border-ink-900/10 bg-surface px-3 py-2 text-xs text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
                       placeholder="/path/to/script.js"
                       value={scriptPath}
                       onChange={(e) => setScriptPath(e.target.value)}
