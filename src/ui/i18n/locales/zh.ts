@@ -21,13 +21,17 @@ export default {
 	sidebar: {
 		newTask: "+ 新建任务",
 		settings: "设置",
-		noSessions: "暂无会话。点击 \"+ 新建任务\" 开始。",
+		noSessions: '暂无会话。点击 "+ 新建任务" 开始。',
 		deleteSession: "删除此会话",
 		resumeInClaudeCode: "在 Claude Code 中恢复",
 		resume: "恢复",
 		close: "关闭",
 		copyResumeCommand: "复制恢复命令",
 		workingDirUnavailable: "工作目录不可用",
+		tooltips: {
+			newTask: "创建一个新任务",
+			settings: "打开设置",
+		},
 	},
 
 	// Settings Page

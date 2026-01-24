@@ -22,13 +22,17 @@ export default {
 	sidebar: {
 		newTask: "+ New Task",
 		settings: "Settings",
-		noSessions: "No sessions yet. Click \"+ New Task\" to start.",
+		noSessions: 'No sessions yet. Click "+ New Task" to start.',
 		deleteSession: "Delete this session",
 		resumeInClaudeCode: "Resume in Claude Code",
 		resume: "Resume",
 		close: "Close",
 		copyResumeCommand: "Copy resume command",
 		workingDirUnavailable: "Working dir unavailable",
+		tooltips: {
+			newTask: "Create a new task",
+			settings: "Open settings",
+		},
 	},
 
 	// Settings Page
