@@ -347,14 +347,14 @@ if __name__ == '__main__':
 
             <div className="flex gap-3">
               <button
-                className="flex-1 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white shadow-soft hover:bg-accent-hover transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white shadow-soft hover:bg-accent-hover transition-colors disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                 onClick={handleCreateSkill}
                 disabled={saving}
               >
                 {saving ? '保存中...' : '保存技能'}
               </button>
               <button
-                className="rounded-xl border border-ink-900/10 bg-surface px-4 py-2.5 text-sm text-ink-700 hover:bg-surface-tertiary transition-colors"
+                className="rounded-xl border border-ink-900/10 bg-surface px-4 py-2.5 text-sm text-ink-700 hover:bg-surface-tertiary transition-colors cursor-pointer"
                 onClick={() => setViewMode('list')}
               >
                 取消
@@ -513,13 +513,13 @@ ${previewData.script ? `
 
           <div className="flex gap-3">
             <button
-              className="flex-1 py-3 rounded-xl bg-accent text-sm font-medium text-white shadow-soft hover:bg-accent-hover transition-colors"
+              className="flex-1 py-3 rounded-xl bg-accent text-sm font-medium text-white shadow-soft hover:bg-accent-hover transition-colors cursor-pointer"
               onClick={() => setViewMode('create')}
             >
               创建新技能
             </button>
             <button
-              className="py-3 px-6 rounded-xl border border-ink-900/10 bg-surface text-sm text-muted hover:bg-surface-tertiary hover:text-ink-700 transition-colors"
+              className="py-3 px-6 rounded-xl border border-ink-900/10 bg-surface text-sm text-muted hover:bg-surface-tertiary hover:text-ink-700 transition-colors cursor-pointer"
               onClick={handleOpenDirectory}
             >
               打开目录
