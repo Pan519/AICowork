@@ -78,7 +78,7 @@ function setupSecurityHeaders(): void {
         // CSP 策略：移除 unsafe-inline 和 unsafe-eval（安全性提升）
         // 注意：由于启用 sandbox，需要使用 nonce 或 hash 来允许内联脚本
         const csp = isDev()
-            ? "default-src 'self' http://localhost:* ws://localhost:*; script-src 'self' http://localhost:*; style-src 'self' 'unsafe-inline' http://localhost:*; img-src 'self' data: https: http://localhost:*; font-src 'self' data:; connect-src 'self' http://localhost:* ws://localhost:* https://api.anthropic.com https://*.anthropic.com;"
+            ? "default-src 'self' http://localhost:* ws://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:*; style-src 'self' 'unsafe-inline' http://localhost:*; img-src 'self' data: https: http://localhost:*; font-src 'self' data:; connect-src 'self' http://localhost:* ws://localhost:* https://api.anthropic.com https://*.anthropic.com;"
             : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.anthropic.com https://*.anthropic.com;";
 
         callback({
