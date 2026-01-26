@@ -16,11 +16,6 @@ const VENDOR_DIR = path.join(__dirname, '..', 'vendor');
 // 修复映射：从真实文件到目标位置
 const FIXES = [
   {
-    name: 'bun',
-    from: path.join(VENDOR_DIR, 'bun-darwin', 'bun-darwin-aarch64', 'bun'),
-    to: path.join(VENDOR_DIR, 'bun-darwin-aarch64', 'bun')
-  },
-  {
     name: 'uv',
     from: path.join(VENDOR_DIR, 'uv-darwin', 'uv-aarch64-apple-darwin', 'uv'),
     to: path.join(VENDOR_DIR, 'uv-darwin-aarch64', 'uv')

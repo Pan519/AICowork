@@ -1,6 +1,6 @@
 # Vendor Dependencies Management
 
-This directory contains scripts for downloading and managing vendor dependencies (bun, uv, node) for packaging.
+This directory contains scripts for downloading and managing vendor dependencies (node, uv) for packaging.
 
 ## Usage
 
@@ -12,8 +12,6 @@ node scripts/download-vendor-deps.js
 
 # The script will create a vendor directory with platform-specific binaries:
 # vendor/
-# ├── bun-darwin-aarch64/
-# │   └── bun
 # ├── uv-darwin-aarch64/
 # │   └── uv
 # └── node-darwin-aarch64/
@@ -37,7 +35,7 @@ This ensures the binaries are accessible in the packaged app at runtime.
 The application uses `src/electron/utils/packaging.ts` to:
 
 1. Build enhanced PATH with vendor binaries
-2. Select appropriate executable (prefer bun, fallback to node)
+2. Select appropriate executable (prefer node)
 3. Pass executable parameter to Claude SDK
 
 ### Platform Support
@@ -49,7 +47,6 @@ The application uses `src/electron/utils/packaging.ts` to:
 ### Version Information
 
 Current versions:
-- bun: v1.1.38
 - uv: 0.4.29
 - node: v20.18.0
 

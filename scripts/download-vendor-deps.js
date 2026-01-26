@@ -2,7 +2,7 @@
 
 /**
  * 下载和准备 vendor 依赖
- * 用于打包时包含 bun、uv、node 等运行时
+ * 用于打包时包含 node、uv 等运行时
  */
 
 import https from 'https';
@@ -16,31 +16,63 @@ const __dirname = path.dirname(__filename);
 
 const VENDOR_DIR = path.join(__dirname, '..', 'vendor');
 
-// 依赖下载配置 - 仅下载arm64架构，优化包体积
+// 依赖下载配置 - 支持多架构，按需下载
+// 使用国内镜像加速下载
 const DEPENDENCIES = {
-  bun: {
-    darwin: {
-      url: 'https://github.com/oven-sh/bun/releases/download/bun-v1.1.38/bun-darwin-aarch64.zip',
-      file: 'bun-darwin-aarch64.zip',
-      extract: 'unzip',
-      executable: 'bun'
-    }
-  },
   uv: {
-    darwin: {
+    'darwin-arm64': {
       url: 'https://github.com/astral-sh/uv/releases/download/0.4.29/uv-aarch64-apple-darwin.tar.gz',
       file: 'uv-aarch64-apple-darwin.tar.gz',
       extract: 'tar -xzf',
       executable: 'uv'
+    },
+    'darwin-x64': {
+      url: 'https://github.com/astral-sh/uv/releases/download/0.4.29/uv-x86_64-apple-darwin.tar.gz',
+      file: 'uv-x86_64-apple-darwin.tar.gz',
+      extract: 'tar -xzf',
+      executable: 'uv'
+    },
+    'linux-x64': {
+      url: 'https://github.com/astral-sh/uv/releases/download/0.4.29/uv-x86_64-unknown-linux-gnu.tar.gz',
+      file: 'uv-x86_64-unknown-linux-gnu.tar.gz',
+      extract: 'tar -xzf',
+      executable: 'uv'
+    },
+    'win32-x64': {
+      url: 'https://github.com/astral-sh/uv/releases/download/0.4.29/uv-x86_64-pc-windows-msvc.zip',
+      file: 'uv-x86_64-pc-windows-msvc.zip',
+      extract: 'unzip',
+      executable: 'uv.exe'
     }
   },
   node: {
-    darwin: {
+    'darwin-x64': {
+      // 使用官方镜像
+      url: 'https://nodejs.org/dist/v20.18.0/node-v20.18.0-darwin-x64.tar.gz',
+      file: 'node-v20.18.0-darwin-x64.tar.gz',
+      extract: 'tar -xzf',
+      executable: 'bin/node',
+      strip: 1
+    },
+    'darwin-arm64': {
       url: 'https://nodejs.org/dist/v20.18.0/node-v20.18.0-darwin-arm64.tar.gz',
       file: 'node-v20.18.0-darwin-arm64.tar.gz',
       extract: 'tar -xzf',
       executable: 'bin/node',
       strip: 1
+    },
+    'linux-x64': {
+      url: 'https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.xz',
+      file: 'node-v20.18.0-linux-x64.tar.xz',
+      extract: 'tar -xJf',
+      executable: 'bin/node',
+      strip: 1
+    },
+    'win32-x64': {
+      url: 'https://nodejs.org/dist/v20.18.0/node-v20.18.0-win-x64.zip',
+      file: 'node-v20.18.0-win-x64.zip',
+      extract: 'unzip',
+      executable: 'node.exe'
     }
   }
 };
@@ -94,14 +126,14 @@ function extractArchive(archivePath, extractDir, extractCmd) {
   }
 }
 
-async function downloadDependency(name, platform) {
-  const config = DEPENDENCIES[name][platform];
+async function downloadDependency(name, platformKey) {
+  const config = DEPENDENCIES[name][platformKey];
   if (!config) {
-    console.log(`No ${name} binary available for ${platform}`);
+    console.log(`No ${name} binary available for ${platformKey}`);
     return;
   }
 
-  const platformDir = path.join(VENDOR_DIR, `${name}-${platform}`);
+  const platformDir = path.join(VENDOR_DIR, `${name}-${platformKey}`);
 
   // 检查是否已存在可执行文件
   let execPath = path.join(platformDir, config.executable);
@@ -120,10 +152,10 @@ async function downloadDependency(name, platform) {
 
   // 如果可执行文件已存在，跳过下载
   if (fs.existsSync(execPath)) {
-    console.log(`${name} for ${platform} already exists at ${execPath}, skipping download`);
+    console.log(`${name} for ${platformKey} already exists at ${execPath}, skipping download`);
 
     // 确保可执行权限（非 Windows）
-    if (platform !== 'win32') {
+    if (!platformKey.startsWith('win32')) {
       try {
         fs.chmodSync(execPath, 0o755);
       } catch (error) {
@@ -177,7 +209,7 @@ async function downloadDependency(name, platform) {
 
   if (fs.existsSync(execPath)) {
     // 设置可执行权限（非 Windows）
-    if (platform !== 'win32') {
+    if (!platformKey.startsWith('win32')) {
       fs.chmodSync(execPath, 0o755);
     }
     console.log(`${name} installed at: ${execPath}`);
@@ -199,35 +231,96 @@ async function downloadDependency(name, platform) {
   }
 }
 
+// 获取当前系统架构信息
+function getCurrentSystemArch() {
+  const platform = process.platform;
+  const arch = process.arch;
+
+  // 映射架构名称
+  if (platform === 'darwin') {
+    // macOS: 根据实际架构选择
+    if (arch === 'arm64') {
+      return 'darwin-arm64';
+    } else if (arch === 'x64') {
+      return 'darwin-x64';
+    }
+  } else if (platform === 'linux') {
+    // Linux: 目前只支持 x64
+    return 'linux-x64';
+  } else if (platform === 'win32') {
+    // Windows: 目前只支持 x64
+    return 'win32-x64';
+  }
+
+  return `${platform}-${arch}`;
+}
+
 async function main() {
   console.log('Downloading vendor dependencies...');
 
-  const platform = process.platform;
+  // 获取当前系统信息
+  const currentPlatform = process.platform;
+  const currentArch = process.arch;
+  const systemKey = getCurrentSystemArch();
+
+  console.log(`\nSystem Information:`);
+  console.log(`  Platform: ${currentPlatform}`);
+  console.log(`  Architecture: ${currentArch}`);
+  console.log(`  Will download: ${systemKey}`);
+
   const supportedPlatforms = ['darwin', 'linux', 'win32'];
 
-  if (!supportedPlatforms.includes(platform)) {
-    console.error(`Unsupported platform: ${platform}`);
+  if (!supportedPlatforms.includes(currentPlatform)) {
+    console.error(`Unsupported platform: ${currentPlatform}`);
     process.exit(1);
   }
 
   ensureDir(VENDOR_DIR);
 
   try {
-    // 为当前平台下载所有依赖
+    // 获取命令行参数
+    const downloadOnly = process.argv.includes('--download-only');
+
+    // 只下载当前系统架构的依赖
     for (const depName of Object.keys(DEPENDENCIES)) {
-      console.log(`\nDownloading ${depName} for ${platform}...`);
-      await downloadDependency(depName, platform);
+      // 如果指定了只下载node，则跳过其他
+      if (downloadOnly && depName !== 'node') {
+        console.log(`\nSkipping ${depName} (download-only mode)`);
+        continue;
+      }
+
+      // 使用标准架构键
+      const archKey = systemKey;
+      const depConfig = DEPENDENCIES[depName];
+      if (depConfig[archKey]) {
+        console.log(`\nDownloading ${depName} for ${archKey}...`);
+        await downloadDependency(depName, archKey);
+      } else {
+        console.log(`\nSkipping ${depName} for ${archKey} (not available)`);
+      }
     }
 
-    console.log('\nAll dependencies downloaded successfully!');
+    console.log('\n✅ All dependencies downloaded successfully!');
     console.log(`Vendor directory: ${VENDOR_DIR}`);
 
     // 列出下载的内容
-    console.log('\nDownloaded files:');
+    console.log('\n📦 Downloaded files:');
     execSync(`ls -la "${VENDOR_DIR}"`, { stdio: 'inherit' });
 
+    // 计算总大小
+    try {
+      const sizeResult = execSync(`du -sh "${VENDOR_DIR}"`, { encoding: 'utf8' });
+      const totalSize = sizeResult.trim().split('\t')[0];
+      console.log(`\n📊 Total size: ${totalSize}`);
+    } catch (e) {
+      // 忽略大小计算错误
+    }
+
+    console.log(`\n🚀 Usage:`);
+    console.log(`  --download-only     只下载node`);
+
   } catch (error) {
-    console.error('Failed to download dependencies:', error);
+    console.error('❌ Failed to download dependencies:', error);
     process.exit(1);
   }
 }

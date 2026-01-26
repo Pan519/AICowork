@@ -6,7 +6,7 @@ import { log } from "../logger.js";
 
 /**
  * 打包依赖管理器
- * 处理 bun、uv 等依赖的打包和运行时路径设置
+ * 处理 node、uv 等依赖的打包和运行时路径设置
  */
 
 import { spawn } from "child_process";
@@ -14,33 +14,45 @@ import { spawn } from "child_process";
 // 需要打包的依赖列表
 const PACKAGED_DEPENDENCIES = [
   {
-    name: "bun",
-    executable: "bun",
-    paths: {
-      darwin: "vendor/bun-darwin/bun-darwin-aarch64/bun",
-      linux: "vendor/bun-linux-x64/bun",
-      win32: "vendor/bun-windows-x64/bun.exe"
-    }
-  },
-  {
     name: "uv",
     executable: "uv",
     paths: {
-      darwin: "vendor/uv-darwin/uv-aarch64-apple-darwin/uv",
-      linux: "vendor/uv-linux-x64/uv",
-      win32: "vendor/uv-windows-x64/uv.exe"
+      "darwin-arm64": "vendor/uv-darwin-arm64/uv-aarch64-apple-darwin/uv",
+      "darwin-x64": "vendor/uv-darwin-x64/uv-x86_64-apple-darwin/uv",
+      "linux-x64": "vendor/uv-linux-x64/uv-x86_64-unknown-linux-gnu/uv",
+      "win32-x64": "vendor/uv-win32-x64/uv-x86_64-pc-windows-msvc/uv.exe"
     }
   },
   {
     name: "node",
     executable: "node",
     paths: {
-      darwin: "vendor/node-darwin/node-v20.18.0-darwin-arm64/bin/node",
-      linux: "vendor/node-linux-x64/bin/node",
-      win32: "vendor/node-windows-x64/node.exe"
+      "darwin-arm64": "vendor/node-darwin-arm64/node-v20.18.0-darwin-arm64/bin/node",
+      "darwin-x64": "vendor/node-darwin-x64/node-v20.18.0-darwin-x64/bin/node",
+      "linux-x64": "vendor/node-linux-x64/node-v20.18.0-linux-x64/bin/node",
+      "win32-x64": "vendor/node-win32-x64/node-v20.18.0-win-x64/node.exe"
     }
   }
 ];
+
+/**
+ * 获取当前系统的架构键名
+ */
+function getSystemArchKey(): string {
+  const platform = process.platform as "darwin" | "linux" | "win32";
+  const arch = process.arch;
+
+  if (platform === "darwin") {
+    // macOS: 根据实际架构选择
+    return arch === "arm64" ? "darwin-arm64" : "darwin-x64";
+  } else if (platform === "linux") {
+    return "linux-x64";
+  } else if (platform === "win32") {
+    return "win32-x64";
+  }
+
+  return `${platform}-${arch}`;
+}
 
 /**
  * 获取增强的 PATH 路径
@@ -48,6 +60,7 @@ const PACKAGED_DEPENDENCIES = [
  */
 export function buildEnhancedPath(): string {
   const platform = process.platform as "darwin" | "linux" | "win32";
+  const archKey = getSystemArchKey();
   const pathSeparator = process.platform === "win32" ? ";" : ":";
 
   // 基础 PATH
@@ -59,7 +72,7 @@ export function buildEnhancedPath(): string {
     const resourcesPath = process.resourcesPath;
 
     PACKAGED_DEPENDENCIES.forEach(dep => {
-      const relativePath = dep.paths[platform];
+      const relativePath = dep.paths[archKey as keyof typeof dep.paths];
       if (relativePath) {
         // 添加到 app.asar.unpacked 的路径
         const unpackedPath = join(resourcesPath, "app.asar.unpacked", relativePath);
@@ -83,8 +96,9 @@ export function buildEnhancedPath(): string {
 /**
  * 获取可执行文件路径
  */
-export async function getExecutablePath(executable: "node" | "bun" | "uv"): Promise<string | undefined> {
+export async function getExecutablePath(executable: "node" | "uv"): Promise<string | undefined> {
   const platform = process.platform as "darwin" | "linux" | "win32";
+  const archKey = getSystemArchKey();
 
   if (app.isPackaged) {
     // 生产环境：使用打包的可执行文件
@@ -94,9 +108,9 @@ export async function getExecutablePath(executable: "node" | "bun" | "uv"): Prom
       return undefined;
     }
 
-    const relativePath = dep.paths[platform];
+    const relativePath = dep.paths[archKey as keyof typeof dep.paths];
     if (!relativePath) {
-      log.error(`[Packaging] No path configured for ${executable} on ${platform}`);
+      log.error(`[Packaging] No path configured for ${executable} on ${platform} (${archKey})`);
       return undefined;
     }
 
@@ -123,8 +137,8 @@ export async function getExecutablePath(executable: "node" | "bun" | "uv"): Prom
       return execPath;
     } else {
       log.warn(`[Packaging] ${executable} not found at: ${execPath}`);
-      // 对于 node/bun，回退到系统 PATH
-      if (executable === "node" || executable === "bun") {
+      // 对于 node，回退到系统 PATH
+      if (executable === "node") {
         log.info(`[Packaging] Falling back to system ${executable}`);
         return executable;
       }
@@ -143,7 +157,7 @@ export async function validatePackagedDependencies(): Promise<Record<string, boo
   const results: Record<string, boolean> = {};
 
   for (const dep of PACKAGED_DEPENDENCIES) {
-    const path = await getExecutablePath(dep.name as "node" | "bun" | "uv");
+    const path = await getExecutablePath(dep.name as "node" | "uv");
     results[dep.name] = !!path;
 
     if (path) {
@@ -166,19 +180,48 @@ export async function validateExecutable(executable: string): Promise<boolean> {
       shell: true
     });
 
+    let isResolved = false;
+
+    const cleanup = () => {
+      if (!isResolved) {
+        isResolved = true;
+        try {
+          process.kill('SIGKILL');
+        } catch (e) {
+          // 忽略 kill 错误
+        }
+      }
+    };
+
+    const resolveWith = (value: boolean) => {
+      if (!isResolved) {
+        isResolved = true;
+        cleanup();
+        resolve(value);
+      }
+    };
+
     process.on('close', (code) => {
-      resolve(code === 0);
+      resolveWith(code === 0);
     });
 
     process.on('error', () => {
-      resolve(false);
+      resolveWith(false);
     });
 
-    // 超时处理
-    setTimeout(() => {
-      process.kill();
-      resolve(false);
-    }, 5000);
+    process.on('exit', (code) => {
+      resolveWith(code === 0);
+    });
+
+    // 超时处理 - 缩短到 3 秒以避免长时间等待
+    const timeout = setTimeout(() => {
+      resolveWith(false);
+    }, 3000);
+
+    // 清理超时定时器
+    process.on('close', () => clearTimeout(timeout));
+    process.on('error', () => clearTimeout(timeout));
+    process.on('exit', () => clearTimeout(timeout));
   });
 }
 
@@ -205,7 +248,7 @@ export async function getValidationReport(): Promise<{
   };
 
   for (const dep of PACKAGED_DEPENDENCIES) {
-    const execPath = await getExecutablePath(dep.name as "node" | "bun" | "uv");
+    const execPath = await getExecutablePath(dep.name as "node" | "uv");
     const isAvailable = await validateExecutable(dep.name);
 
     report.dependencies[dep.name] = {
@@ -229,26 +272,21 @@ export async function getValidationReport(): Promise<{
  * 获取 SDK 执行选项
  */
 export async function getSDKExecutableOptions(): Promise<{
-  executable?: "node" | "bun" | "deno";
+  executable?: "node";
   env?: Record<string, string>;
 }> {
   const options: {
-    executable?: "node" | "bun" | "deno";
+    executable?: "node";
     env?: Record<string, string>;
   } = {};
 
-  // 优先使用 bun（如果可用）
-  const bunPath = await getExecutablePath("bun");
-  if (bunPath) {
-    options.executable = "bun";
-    log.info("[Packaging] Using bun as SDK executable");
+  // 使用 node（优先选择）
+  const nodePath = await getExecutablePath("node");
+  if (nodePath) {
+    options.executable = "node";
+    log.info("[Packaging] Using node as SDK executable");
   } else {
-    // 回退到 node
-    const nodePath = await getExecutablePath("node");
-    if (nodePath) {
-      options.executable = "node";
-      log.info("[Packaging] Using node as SDK executable");
-    }
+    log.warn("[Packaging] node not found, will use system node");
   }
 
   // 设置增强的 PATH
@@ -257,11 +295,6 @@ export async function getSDKExecutableOptions(): Promise<{
     ...process.env,
     PATH: enhancedPath
   };
-
-  // 添加其他有用的环境变量
-  if (bunPath) {
-    options.env.BUN_INSTALL = dirname(bunPath);
-  }
 
   if (await getExecutablePath("uv")) {
     options.env.UV_PYTHON_PREFERENCE = "only-system";

@@ -75,12 +75,12 @@ export async function runClaude(options: RunnerOptions): Promise<RunnerHandle> {
     });
   };
 
-  // Start the query in the background
-  (async () => {
-    // 在 try 块外部声明变量，便于 catch 块访问
-    let config: Awaited<ReturnType<typeof getCachedApiConfig>> = null;
-    let claudeCodePath: string | undefined = undefined;
+  // 在 try 块外部声明变量，便于 catch 块访问
+  let config: Awaited<ReturnType<typeof getCachedApiConfig>> = null;
+  let claudeCodePath: string | undefined = undefined;
 
+  // 执行查询逻辑
+  (async () => {
     try {
       // 1. 获取并验证 API 配置（使用预加载的缓存）
       log.debug(`[Runner] Fetching API config...`);
@@ -276,6 +276,30 @@ export async function runClaude(options: RunnerOptions): Promise<RunnerHandle> {
       });
     }
   })();
+
+  // 等待查询完成或被中止
+  await new Promise<void>((resolve) => {
+    // 监听中止事件
+    const checkAbort = () => {
+      if (abortController.signal.aborted) {
+        resolve();
+      }
+    };
+
+    // 立即检查一次
+    checkAbort();
+
+    // 定期检查中止状态
+    const interval = setInterval(checkAbort, 100);
+
+    // 在 abort 方法中清理
+    const originalAbort = abortController.abort.bind(abortController);
+    abortController.abort = () => {
+      clearInterval(interval);
+      originalAbort();
+      resolve();
+    };
+  });
 
   return {
     abort: () => abortController.abort()

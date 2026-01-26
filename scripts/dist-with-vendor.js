@@ -21,15 +21,14 @@ try {
     console.log('⚠️  Vendor directory not found. Creating mock vendor dependencies...');
 
     // Create vendor directory structure
-    execSync('mkdir -p vendor/bun-darwin-aarch64 vendor/uv-darwin-aarch64 vendor/node-darwin-aarch64/bin', { cwd: rootDir });
+    execSync('mkdir -p vendor/uv-darwin-aarch64 vendor/node-darwin-aarch64/bin', { cwd: rootDir });
 
     // Create mock executables
-    execSync(`echo '#!/bin/bash\necho "bun v1.1.38"' > vendor/bun-darwin-aarch64/bun`, { cwd: rootDir });
     execSync(`echo '#!/bin/bash\necho "uv v0.4.29"' > vendor/uv-darwin-aarch64/uv`, { cwd: rootDir });
     execSync(`echo '#!/bin/bash\necho "node v20.18.0"' > vendor/node-darwin-aarch64/bin/node`, { cwd: rootDir });
 
     // Make them executable
-    execSync('chmod +x vendor/bun-darwin-aarch64/bun vendor/uv-darwin-aarch64/uv vendor/node-darwin-aarch64/bin/node', { cwd: rootDir });
+    execSync('chmod +x vendor/uv-darwin-aarch64/uv vendor/node-darwin-aarch64/bin/node', { cwd: rootDir });
 
     console.log('✅ Mock vendor dependencies created\n');
   }
