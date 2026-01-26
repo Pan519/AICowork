@@ -18,18 +18,18 @@ fi
 NODE_VERSION=$(node -v)
 echo "✅ Node.js 版本: $NODE_VERSION"
 
-# 检查 pnpm
-if ! command -v pnpm &> /dev/null; then
-    echo "❌ 请先安装 pnpm (https://pnpm.io/installation)"
+# 检查 npm
+if ! command -v npm &> /dev/null; then
+    echo "❌ 请先安装 npm"
     exit 1
 fi
 
-echo "✅ pnpm 版本: $(pnpm -v)"
+echo "✅ npm 版本: $(npm -v)"
 echo ""
 
 # 安装依赖
 echo "📦 安装依赖..."
-pnpm install --frozen-lockfile
+npm install --legacy-peer-deps
 echo ""
 
 # 下载 vendor 依赖

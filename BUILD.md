@@ -25,13 +25,13 @@
 ### 1. 环境要求
 
 - Node.js >= 20.x
-- pnpm >= 9.x
+- npm >= 9.x
 - Git
 
 ### 2. 安装依赖
 
 ```bash
-pnpm install
+npm install --legacy-peer-deps
 ```
 
 ### 3. 下载 vendor 依赖
@@ -167,7 +167,7 @@ npm run dev
 
 2. 依赖安装
    ```bash
-   pnpm install
+   npm ci
    ```
 
 3. vendor 依赖

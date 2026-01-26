@@ -59,22 +59,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm install --legacy-peer-deps
 
       - name: Download vendor dependencies
         run: node scripts/download-vendor-deps.js
@@ -88,8 +76,8 @@ jobs:
       - name: Build application
         run: |
           echo "Building for ${{ matrix.platform }}-${{ matrix.arch }}"
-          pnpm run transpile:electron
-          pnpm run vite:build
+          npm run transpile:electron
+          npm run vite:build
 
       - name: Build distributable
         env:
@@ -106,11 +94,11 @@ jobs:
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: |
           if [ "${{ matrix.platform }}" = "mac" ]; then
-            pnpm run dist:mac-${{ matrix.build-arch }}
+            npm run dist:mac-${{ matrix.build-arch }}
           elif [ "${{ matrix.platform }}" = "win" ]; then
-            pnpm run dist:win
+            npm run dist:win
           elif [ "${{ matrix.platform }}" = "linux" ]; then
-            pnpm run dist:linux
+            npm run dist:linux
           fi
 
       - name: Upload artifacts
