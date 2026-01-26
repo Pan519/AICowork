@@ -37,16 +37,16 @@
 
 ```bash
 # 检查代码质量
-npm run lint
+pnpm run lint
 
 # 类型检查
-npm run transpile:electron
+pnpm run transpile:electron
 
 # 运行测试
-npm test
+pnpm test
 
 # 本地构建（测试）
-npm run build
+pnpm run build
 ```
 
 ### 发布新版本
@@ -119,7 +119,7 @@ npm run build
 
 1. **检查依赖安装**
    ```bash
-   npm ci
+   pnpm install
    ```
 
 2. **检查 Node.js 版本**
@@ -129,8 +129,8 @@ npm run build
 
 3. **本地运行构建**
    ```bash
-   npm run transpile:electron
-   npm run vite:build
+   pnpm run transpile:electron
+   pnpm run vite:build
    ```
 
 ### 签名失败

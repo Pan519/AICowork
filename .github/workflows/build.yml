@@ -55,10 +55,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Download vendor dependencies
         run: node scripts/download-vendor-deps.js
@@ -72,8 +77,8 @@ jobs:
       - name: Build application
         run: |
           echo "Building for ${{ matrix.platform }}-${{ matrix.arch }}"
-          npm run transpile:electron
-          npm run vite:build
+          pnpm run transpile:electron
+          pnpm run vite:build
 
       - name: Build distributable
         env:
@@ -90,11 +95,11 @@ jobs:
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: |
           if [ "${{ matrix.platform }}" = "mac" ]; then
-            npm run dist:mac-${{ matrix.build-arch }}
+            pnpm run dist:mac-${{ matrix.build-arch }}
           elif [ "${{ matrix.platform }}" = "win" ]; then
-            npm run dist:win
+            pnpm run dist:win
           elif [ "${{ matrix.platform }}" = "linux" ]; then
-            npm run dist:linux
+            pnpm run dist:linux
           fi
 
       - name: Upload artifacts

@@ -25,13 +25,13 @@
 ### 1. 环境要求
 
 - Node.js >= 20.x
-- npm >= 9.x
+- pnpm >= 9.x
 - Git
 
 ### 2. 安装依赖
 
 ```bash
-npm ci
+pnpm install
 ```
 
 ### 3. 下载 vendor 依赖
@@ -167,7 +167,7 @@ npm run dev
 
 2. 依赖安装
    ```bash
-   npm ci
+   pnpm install
    ```
 
 3. vendor 依赖
