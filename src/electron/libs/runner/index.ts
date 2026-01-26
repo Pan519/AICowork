@@ -14,6 +14,7 @@ import { getCachedApiConfig } from "../../managers/sdk-config-cache.js";
 import { getEnhancedEnv } from "../../utils/util.js";
 import { addLanguagePreference } from "../../utils/language-detector.js";
 import { getMemoryToolConfig } from "../../utils/memory-tools.js";
+import { getSDKExecutableOptions } from "../../utils/packaging.js";
 
 import { PerformanceMonitor } from "./performance-monitor.js";
 import { triggerAutoMemoryAnalysis } from "./memory-manager.js";
@@ -163,15 +164,23 @@ export async function runClaude(options: RunnerOptions): Promise<RunnerHandle> {
         log.warn('[Runner] CLI path not found, falling back to HTTP API mode');
       }
 
+      // 获取 SDK 执行选项（包含 executable 和增强的 env）
+      const sdkExecutableOptions = await getSDKExecutableOptions();
+
       const q = query({
         prompt: prompt,  // SDK 直接处理斜杠命令
         options: {
           cwd: session.cwd ?? DEFAULT_CWD,
           resume: resumeSessionId,
           abortController,
-          env: mergedEnv,
+          env: {
+            ...mergedEnv,
+            ...sdkExecutableOptions.env
+          },
           // 阿里云不传递 CLI 路径，使用纯 HTTP API 模式
           ...(claudeCodePath ? { pathToClaudeCodeExecutable: claudeCodePath } : {}),
+          // 传递 executable 参数
+          ...(sdkExecutableOptions.executable ? { executable: sdkExecutableOptions.executable } : {}),
           permissionMode,
           includePartialMessages: true,
           // ⭐ 设置 settingSources 让 SDK 自动加载 ~/.claude/settings.json

@@ -28,7 +28,13 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
-		"test:components": "vitest run --config vitest.config.components.ts"
+		"test:components": "vitest run --config vitest.config.components.ts",
+		"download:vendor": "node scripts/download-vendor-deps.js",
+		"prebuild": "npm run download:vendor",
+		"build:nocheck": "node scripts/build-without-vendor.js",
+		"auto:test": "node scripts/auto-cowork.js --auto",
+		"auto:test:interactive": "node scripts/auto-cowork.js",
+		"auto:test:monitor": "node scripts/auto-cowork.js --monitor"
 	},
 	"dependencies": {
 		"@anthropic-ai/claude-agent-sdk": "^0.2.17",

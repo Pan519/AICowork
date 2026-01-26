@@ -20,6 +20,7 @@
         "node_modules/zod/**/*",
         "node_modules/winston/**/*",
         "node_modules/**/*",
+        "vendor/**/*",
         "!**/*.map",
         "!**/*.d.ts",
         "!**/*.md",
@@ -32,7 +33,9 @@
     "asarUnpack": [
         "node_modules/better-sqlite3/build/**/*.node",
         "node_modules/@memvid/sdk/**/*.node",
-        "node_modules/@anthropic-ai/claude-agent-sdk/**/*"
+        "node_modules/@anthropic-ai/claude-agent-sdk/**/*",
+        "vendor/**/*",
+        "vendor/**"
     ],
     "icon": "./templateIcon.ico",
     "mac": {
