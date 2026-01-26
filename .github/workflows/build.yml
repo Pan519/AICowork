@@ -88,9 +88,6 @@ jobs:
           # Windows 签名配置（如果设置了 secrets）
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-
-          # Linux 打包配置
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ matrix.platform }}" = "mac" ]; then
             npm run dist:mac-${{ matrix.build-arch }}
