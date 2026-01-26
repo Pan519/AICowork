@@ -79,27 +79,30 @@ jobs:
           npm run transpile:electron
           npm run vite:build
 
-      - name: Build distributable
+      - name: Build distributable for macOS
+        if: matrix.platform == 'mac'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS 签名配置（如果设置了 secrets）
           CSC_NAME: ${{ secrets.CSC_NAME }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEYCHAIN: ${{ secrets.CSC_KEYCHAIN }}
           CSC_KEYCHAIN_PASSWORD: ${{ secrets.CSC_KEYCHAIN_PASSWORD }}
+        run: npm run dist:mac-${{ matrix.build-arch }}
 
-          # Windows 签名配置（如果设置了 secrets）
+      - name: Build distributable for Windows
+        if: matrix.platform == 'win'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-        run: |
-          if [ "${{ matrix.platform }}" = "mac" ]; then
-            npm run dist:mac-${{ matrix.build-arch }}
-          elif [ "${{ matrix.platform }}" = "win" ]; then
-            npm run dist:win
-          elif [ "${{ matrix.platform }}" = "linux" ]; then
-            npm run dist:linux
-          fi
+        run: npm run dist:win
+
+      - name: Build distributable for Linux
+        if: matrix.platform == 'linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:linux
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
