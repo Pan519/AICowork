@@ -67,11 +67,8 @@
             }
         ],
         "category": "Utility",
-        "desktop": {
-            "Name": "AICowork",
-            "Comment": "AI Cowork - 智能协作助手",
-            "Keywords": "AI;协作;助手;"
-        }
+        "maintainer": "Alan",
+        "synopsis": "AI Cowork - 智能协作助手"
     },
     "win": {
         "signAndEditExecutable": false,
