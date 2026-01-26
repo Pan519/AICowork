@@ -29,7 +29,7 @@
         "!**/__tests__/**"
     ],
     "extraResources": [],
-    "npmRebuild": false,
+    "npmRebuild": true,
     "asarUnpack": [
         "node_modules/better-sqlite3/build/**/*.node",
         "node_modules/@memvid/sdk/**/*.node",

@@ -17,7 +17,7 @@ const PACKAGED_DEPENDENCIES = [
     name: "bun",
     executable: "bun",
     paths: {
-      darwin: "vendor/bun-darwin-aarch64/bun",
+      darwin: "vendor/bun-darwin/bun-darwin-aarch64/bun",
       linux: "vendor/bun-linux-x64/bun",
       win32: "vendor/bun-windows-x64/bun.exe"
     }
@@ -26,7 +26,7 @@ const PACKAGED_DEPENDENCIES = [
     name: "uv",
     executable: "uv",
     paths: {
-      darwin: "vendor/uv-darwin-aarch64/uv",
+      darwin: "vendor/uv-darwin/uv-aarch64-apple-darwin/uv",
       linux: "vendor/uv-linux-x64/uv",
       win32: "vendor/uv-windows-x64/uv.exe"
     }
@@ -35,7 +35,7 @@ const PACKAGED_DEPENDENCIES = [
     name: "node",
     executable: "node",
     paths: {
-      darwin: "vendor/node-darwin-aarch64/bin/node",
+      darwin: "vendor/node-darwin/node-v20.18.0-darwin-arm64/bin/node",
       linux: "vendor/node-linux-x64/bin/node",
       win32: "vendor/node-windows-x64/node.exe"
     }

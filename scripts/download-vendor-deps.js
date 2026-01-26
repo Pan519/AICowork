@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
 
 const VENDOR_DIR = path.join(__dirname, '..', 'vendor');
 
-// 依赖下载配置
+// 依赖下载配置 - 仅下载arm64架构，优化包体积
 const DEPENDENCIES = {
   bun: {
     darwin: {
@@ -24,18 +24,6 @@ const DEPENDENCIES = {
       file: 'bun-darwin-aarch64.zip',
       extract: 'unzip',
       executable: 'bun'
-    },
-    linux: {
-      url: 'https://github.com/oven-sh/bun/releases/download/bun-v1.1.38/bun-linux-x64.zip',
-      file: 'bun-linux-x64.zip',
-      extract: 'unzip',
-      executable: 'bun'
-    },
-    win32: {
-      url: 'https://github.com/oven-sh/bun/releases/download/bun-v1.1.38/bun-windows-x64.zip',
-      file: 'bun-windows-x64.zip',
-      extract: 'unzip',
-      executable: 'bun.exe'
     }
   },
   uv: {
@@ -44,18 +32,6 @@ const DEPENDENCIES = {
       file: 'uv-aarch64-apple-darwin.tar.gz',
       extract: 'tar -xzf',
       executable: 'uv'
-    },
-    linux: {
-      url: 'https://github.com/astral-sh/uv/releases/download/0.4.29/uv-x86_64-unknown-linux-gnu.tar.gz',
-      file: 'uv-x86_64-unknown-linux-gnu.tar.gz',
-      extract: 'tar -xzf',
-      executable: 'uv'
-    },
-    win32: {
-      url: 'https://github.com/astral-sh/uv/releases/download/0.4.29/uv-x86_64-pc-windows-msvc.zip',
-      file: 'uv-x86_64-pc-windows-msvc.zip',
-      extract: 'unzip',
-      executable: 'uv.exe'
     }
   },
   node: {
@@ -65,19 +41,6 @@ const DEPENDENCIES = {
       extract: 'tar -xzf',
       executable: 'bin/node',
       strip: 1
-    },
-    linux: {
-      url: 'https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.xz',
-      file: 'node-v20.18.0-linux-x64.tar.xz',
-      extract: 'tar -xJf',
-      executable: 'bin/node',
-      strip: 1
-    },
-    win32: {
-      url: 'https://nodejs.org/dist/v20.18.0/node-v20.18.0-win-x64.zip',
-      file: 'node-v20.18.0-win-x64.zip',
-      extract: 'unzip',
-      executable: 'node.exe'
     }
   }
 };
@@ -144,7 +107,7 @@ async function downloadDependency(name, platform) {
   let execPath = path.join(platformDir, config.executable);
 
   // 检查是否在子目录中（如果直接路径不存在）
-  if (!fs.existsSync(execPath)) {
+  if (!fs.existsSync(execPath) && fs.existsSync(platformDir)) {
     const dirs = fs.readdirSync(platformDir).filter(f => {
       const fullPath = path.join(platformDir, f);
       return fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory() && !f.startsWith('__MACOSX');
