@@ -37,7 +37,6 @@
         "vendor/**/*",
         "vendor/**"
     ],
-    "icon": "./templateIcon.ico",
     "mac": {
         "target": [
             {
@@ -49,7 +48,8 @@
                 "arch": ["arm64", "x64"]
             }
         ],
-        "category": "public.app-category.productivity"
+        "category": "public.app-category.productivity",
+        "icon": "./templateIcon.png"
     },
     "linux": {
         "target": [
@@ -68,7 +68,8 @@
         ],
         "category": "Utility",
         "maintainer": "Alan",
-        "synopsis": "AI Cowork - 智能协作助手"
+        "synopsis": "AI Cowork - 智能协作助手",
+        "icon": "./templateIcon.png"
     },
     "win": {
         "signAndEditExecutable": false,
@@ -81,6 +82,7 @@
                 "target": "zip",
                 "arch": ["x64"]
             }
-        ]
+        ],
+        "icon": "./templateIcon.ico"
     }
 }
