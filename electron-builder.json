@@ -34,8 +34,7 @@
         "node_modules/better-sqlite3/build/**/*.node",
         "node_modules/@memvid/sdk/**/*.node",
         "node_modules/@anthropic-ai/claude-agent-sdk/**/*",
-        "vendor/**/*",
-        "vendor/**"
+        "vendor/**/*"
     ],
     "mac": {
         "target": [
@@ -49,7 +48,8 @@
             }
         ],
         "category": "public.app-category.productivity",
-        "icon": "./templateIcon.png"
+        "icon": "./templateIcon.png",
+        "identity": null
     },
     "linux": {
         "target": [

@@ -83,11 +83,6 @@ jobs:
         if: matrix.platform == 'mac'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_NAME: ${{ secrets.CSC_NAME }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEYCHAIN: ${{ secrets.CSC_KEYCHAIN }}
-          CSC_KEYCHAIN_PASSWORD: ${{ secrets.CSC_KEYCHAIN_PASSWORD }}
         run: npm run dist:mac-${{ matrix.build-arch }}
 
       - name: Build distributable for Windows
