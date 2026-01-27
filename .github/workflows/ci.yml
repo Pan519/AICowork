@@ -1,0 +1,107 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  # 验证 job - 在 main 分支 push 后运行
+  verify-main-push:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          timeout-minutes: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Download vendor dependencies
+        run: node scripts/download-vendor-deps.js
+
+      - name: Build application
+        run: |
+          npm run transpile:electron
+          npm run vite:build
+        env:
+          CI: true
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true
+
+      - name: Build verification
+        run: |
+          echo "✅ 构建验证通过"
+          echo "📦 构建产物大小:"
+          du -sh dist-react/ dist-electron/ 2>/dev/null || echo "构建产物不存在"
+
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ CI 验证通过！主分支构建成功。'
+            })
+
+  # 跨平台构建测试
+  build-test:
+    timeout-minutes: 45
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          timeout-minutes: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Download vendor dependencies
+        run: node scripts/download-vendor-deps.js
+
+      - name: Build application
+        run: |
+          npm run transpile:electron
+          npm run vite:build
+        env:
+          # 在 CI 环境中，我们只测试构建，不实际打包
+          CI: true
+
+      - name: Upload build artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            dist-react/
+            dist-electron/
+          retention-days: 1

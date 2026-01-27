@@ -28,13 +28,18 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
-		"test:components": "vitest run --config vitest.config.components.ts"
+		"test:components": "vitest run --config vitest.config.components.ts",
+		"download:vendor": "node scripts/download-vendor-deps.js",
+		"prebuild": "npm run download:vendor",
+		"build:nocheck": "node scripts/build-without-vendor.js",
+		"auto:test": "node scripts/auto-cowork.js --auto",
+		"auto:test:interactive": "node scripts/auto-cowork.js",
+		"auto:test:monitor": "node scripts/auto-cowork.js --monitor"
 	},
 	"dependencies": {
 		"@anthropic-ai/claude-agent-sdk": "^0.2.17",
 		"@anthropic-ai/tokenizer": "^0.0.4",
 		"@memvid/sdk": "^2.0.120",
-		"@memvid/sdk-darwin-arm64": "^2.0.151",
 		"@radix-ui/react-dialog": "^1.1.15",
 		"@radix-ui/react-dropdown-menu": "^2.1.16",
 		"@radix-ui/react-tooltip": "^1.2.8",
@@ -53,8 +58,11 @@
 		"tailwindcss": "^4.1.18",
 		"vite-tsconfig-paths": "^6.0.4",
 		"winston": "^3.19.0",
-		"zod": "^4.3.5",
+		"zod": "^3.25.76",
 		"zustand": "^5.0.10"
+	},
+	"optionalDependencies": {
+		"@memvid/sdk-darwin-arm64": "^2.0.152"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
@@ -79,12 +87,5 @@
 		"typescript-eslint": "^8.53.1",
 		"vite": "^7.3.1",
 		"vitest": "^4.0.17"
-	},
-	"pnpm": {
-		"peerDependencyRules": {
-			"ignoreMissing": [
-				"zod"
-			]
-		}
 	}
 }

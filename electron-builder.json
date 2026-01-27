@@ -20,6 +20,7 @@
         "node_modules/zod/**/*",
         "node_modules/winston/**/*",
         "node_modules/**/*",
+        "vendor/**/*",
         "!**/*.map",
         "!**/*.d.ts",
         "!**/*.md",
@@ -28,24 +29,60 @@
         "!**/__tests__/**"
     ],
     "extraResources": [],
-    "npmRebuild": false,
+    "npmRebuild": true,
     "asarUnpack": [
         "node_modules/better-sqlite3/build/**/*.node",
         "node_modules/@memvid/sdk/**/*.node",
-        "node_modules/@anthropic-ai/claude-agent-sdk/**/*"
+        "node_modules/@anthropic-ai/claude-agent-sdk/**/*",
+        "vendor/**/*"
     ],
-    "icon": "./templateIcon.ico",
     "mac": {
-        "target": "dmg"
+        "target": [
+            {
+                "target": "dmg",
+                "arch": ["arm64", "x64"]
+            },
+            {
+                "target": "zip",
+                "arch": ["arm64", "x64"]
+            }
+        ],
+        "category": "public.app-category.productivity",
+        "icon": "./templateIcon.png",
+        "identity": null
     },
     "linux": {
-        "target": "AppImage",
-        "category": "Utility"
+        "target": [
+            {
+                "target": "AppImage",
+                "arch": ["x64"]
+            },
+            {
+                "target": "deb",
+                "arch": ["x64"]
+            },
+            {
+                "target": "rpm",
+                "arch": ["x64"]
+            }
+        ],
+        "category": "Utility",
+        "maintainer": "Alan",
+        "synopsis": "AI Cowork - 智能协作助手",
+        "icon": "./templateIcon.png"
     },
     "win": {
         "signAndEditExecutable": false,
         "target": [
-            "portable"
-        ]
+            {
+                "target": "nsis",
+                "arch": ["x64"]
+            },
+            {
+                "target": "zip",
+                "arch": ["x64"]
+            }
+        ],
+        "icon": "./templateIcon.ico"
     }
 }

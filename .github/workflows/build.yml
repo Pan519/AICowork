@@ -1,0 +1,130 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 只在打标签时触发
+
+permissions:
+  contents: write  # 用于上传发布资产
+
+jobs:
+  build:
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        include:
+          # macOS ARM64 (Apple Silicon)
+          - os: macos-14
+            arch: arm64
+            platform: mac
+            build-arch: arm64
+            artifact-suffix: arm64
+            electron-arch: arm64
+
+          # macOS Intel (x64)
+          - os: macos-13
+            arch: x64
+            platform: mac
+            build-arch: x64
+            artifact-suffix: x64
+            electron-arch: x64
+
+          # Windows x64
+          - os: windows-latest
+            arch: x64
+            platform: win
+            build-arch: x64
+            artifact-suffix: win-x64
+            electron-arch: x64
+
+          # Linux x64
+          - os: ubuntu-22.04
+            arch: x64
+            platform: linux
+            build-arch: x64
+            artifact-suffix: linux-x64
+            electron-arch: x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          timeout-minutes: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Download vendor dependencies
+        run: node scripts/download-vendor-deps.js
+        # 注意：只下载当前系统架构的依赖
+
+      - name: Fix vendor executables (macOS)
+        if: matrix.platform == 'mac'
+        run: node scripts/fix-vendor-executables.js
+        # 修复可执行文件权限
+
+      - name: Build application
+        run: |
+          echo "Building for ${{ matrix.platform }}-${{ matrix.arch }}"
+          npm run transpile:electron
+          npm run vite:build
+
+      - name: Build distributable for macOS
+        if: matrix.platform == 'mac'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:mac-${{ matrix.build-arch }}
+
+      - name: Build distributable for Windows
+        if: matrix.platform == 'win'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: npm run dist:win
+
+      - name: Build distributable for Linux
+        if: matrix.platform == 'linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:linux
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-app-${{ matrix.artifact-suffix }}
+          path: |
+            dist/*.dmg
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.zip
+          retention-days: 30
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/*.dmg
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

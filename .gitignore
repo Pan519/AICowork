@@ -39,3 +39,6 @@ out
 *.sw?
 
 .env
+
+vendor/
+release-backup/

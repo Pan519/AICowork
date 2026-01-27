@@ -14,6 +14,7 @@ import { getCachedApiConfig } from "../../managers/sdk-config-cache.js";
 import { getEnhancedEnv } from "../../utils/util.js";
 import { addLanguagePreference } from "../../utils/language-detector.js";
 import { getMemoryToolConfig } from "../../utils/memory-tools.js";
+import { getSDKExecutableOptions } from "../../utils/packaging.js";
 
 import { PerformanceMonitor } from "./performance-monitor.js";
 import { triggerAutoMemoryAnalysis } from "./memory-manager.js";
@@ -74,12 +75,12 @@ export async function runClaude(options: RunnerOptions): Promise<RunnerHandle> {
     });
   };
 
-  // Start the query in the background
-  (async () => {
-    // 在 try 块外部声明变量，便于 catch 块访问
-    let config: Awaited<ReturnType<typeof getCachedApiConfig>> = null;
-    let claudeCodePath: string | undefined = undefined;
+  // 在 try 块外部声明变量，便于 catch 块访问
+  let config: Awaited<ReturnType<typeof getCachedApiConfig>> = null;
+  let claudeCodePath: string | undefined = undefined;
 
+  // 执行查询逻辑
+  (async () => {
     try {
       // 1. 获取并验证 API 配置（使用预加载的缓存）
       log.debug(`[Runner] Fetching API config...`);
@@ -163,15 +164,23 @@ export async function runClaude(options: RunnerOptions): Promise<RunnerHandle> {
         log.warn('[Runner] CLI path not found, falling back to HTTP API mode');
       }
 
+      // 获取 SDK 执行选项（包含 executable 和增强的 env）
+      const sdkExecutableOptions = await getSDKExecutableOptions();
+
       const q = query({
         prompt: prompt,  // SDK 直接处理斜杠命令
         options: {
           cwd: session.cwd ?? DEFAULT_CWD,
           resume: resumeSessionId,
           abortController,
-          env: mergedEnv,
+          env: {
+            ...mergedEnv,
+            ...sdkExecutableOptions.env
+          },
           // 阿里云不传递 CLI 路径，使用纯 HTTP API 模式
           ...(claudeCodePath ? { pathToClaudeCodeExecutable: claudeCodePath } : {}),
+          // 传递 executable 参数
+          ...(sdkExecutableOptions.executable ? { executable: sdkExecutableOptions.executable } : {}),
           permissionMode,
           includePartialMessages: true,
           // ⭐ 设置 settingSources 让 SDK 自动加载 ~/.claude/settings.json
@@ -267,6 +276,30 @@ export async function runClaude(options: RunnerOptions): Promise<RunnerHandle> {
       });
     }
   })();
+
+  // 等待查询完成或被中止
+  await new Promise<void>((resolve) => {
+    // 监听中止事件
+    const checkAbort = () => {
+      if (abortController.signal.aborted) {
+        resolve();
+      }
+    };
+
+    // 立即检查一次
+    checkAbort();
+
+    // 定期检查中止状态
+    const interval = setInterval(checkAbort, 100);
+
+    // 在 abort 方法中清理
+    const originalAbort = abortController.abort.bind(abortController);
+    abortController.abort = () => {
+      clearInterval(interval);
+      originalAbort();
+      resolve();
+    };
+  });
 
   return {
     abort: () => abortController.abort()
